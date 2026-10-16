@@ -1,18 +1,21 @@
+
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-// Firebase Console > Project settings > Your apps > SDK setup. Replace all values below.
 const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY',
-  authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_PROJECT_ID.firebasestorage.app',
-  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-  appId: 'YOUR_APP_ID'
+  apiKey: "AIzaSyBb85D1MyUuSRSSUUrMJKQhKf3p4mpx3Dc",
+  authDomain: "ss-photographys.firebaseapp.com",
+  projectId: "ss-photographys",
+  storageBucket: "ss-photographys.firebasestorage.app",
+  messagingSenderId: "133403930276",
+  appId: "1:133403930276:web:fb70ac714334d0a5160031",
+  measurementId: "G-NNTG18H645"
 };
+
 const app = initializeApp(firebaseConfig);
+
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
