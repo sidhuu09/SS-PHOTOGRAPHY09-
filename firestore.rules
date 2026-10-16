@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function validBooking(data) {
+      return data.keys().hasAll(['name','email','phone','service','date','time','location','message','status','paymentStatus','advanceAmount','customerUid','createdAt'])
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 80
+        && data.email is string && data.email.size() <= 120
+        && data.phone is string && data.phone.size() >= 8 && data.phone.size() <= 18
+        && data.service is string && data.service.size() <= 80
+        && data.date is string && data.date.size() == 10
+        && data.time is string && data.time.size() <= 10
+        && data.location is string && data.location.size() <= 160
+        && data.message is string && data.message.size() <= 1000
+        && data.advanceAmount is number && data.advanceAmount >= 0 && data.advanceAmount <= 100000
+        && data.status == 'pending' && data.paymentStatus == 'advance_pending'
+        && (data.customerUid == null || (signedIn() && data.customerUid == request.auth.uid));
+    }
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false; // Add/remove admin docs only from Firebase Console or trusted Admin SDK.
+    }
+    match /bookings/{bookingId} {
+      allow create: if validBooking(request.resource.data);
+      allow read: if isAdmin() || (signedIn() && resource.data.customerUid == request.auth.uid)
+        || (signedIn() && resource.data.customerUid == null && resource.data.email == request.auth.token.email);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    match /gallery/{photoId} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasAll(['url','path','caption','createdAt','uploadedBy'])
+        && request.resource.data.caption is string && request.resource.data.caption.size() <= 160
+        && request.resource.data.uploadedBy == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+  }
+}
